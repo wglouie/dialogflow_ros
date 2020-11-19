@@ -230,7 +230,7 @@ class DialogflowClient(object):
         self.last_contexts = utils.converters.contexts_msg_to_struct(self.last_contexts)
         # The below line breaks slot-filling capabilities in Dialogflow flow
         #contexts = self.last_contexts + user_contexts
-        params = QueryParameters(contexts=contexts)
+        params = QueryParameters()
         try:
             response = self._session_cli.detect_intent(
                     session=self._session,
