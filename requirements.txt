@@ -4,4 +4,3 @@ six==1.10.0
 google-api-python-client
 dialogflow
 pyyaml
-protobuf-to-dict
