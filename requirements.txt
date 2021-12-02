@@ -2,5 +2,5 @@ PyAudio
 google-cloud-speech
 six==1.10.0
 google-api-python-client
-dialogflow
+dialogflow=1.1.1
 pyyaml
