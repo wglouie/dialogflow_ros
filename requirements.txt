@@ -4,3 +4,4 @@ six==1.10.0
 google-api-python-client==1.12.11
 dialogflow==1.1.1
 pyyaml
+protobuf==3.17.3
