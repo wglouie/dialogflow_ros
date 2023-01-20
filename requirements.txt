@@ -1,6 +1,6 @@
-PyAudio
+PyAudio==0.2.8
 google-cloud-speech
 six==1.10.0
-google-api-python-client
+google-api-python-client==1.12.11
 dialogflow==1.1.1
 pyyaml
