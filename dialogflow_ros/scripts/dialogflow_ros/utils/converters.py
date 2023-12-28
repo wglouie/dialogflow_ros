@@ -1,11 +1,12 @@
+# -*- coding: utf-8 -*-
 import rospy
 from google.protobuf import struct_pb2
-from dialogflow_v2beta1.types import Context, EventInput, InputAudioConfig, \
+from google.cloud.dialogflow_v2.types import Context, EventInput, InputAudioConfig, \
     OutputAudioConfig, QueryInput, QueryParameters, \
     SentimentAnalysisRequestConfig, StreamingDetectIntentRequest, TextInput
-from dialogflow_ros.msg import *
-from output import print_context_parameters
-
+from dialogflow_ros_msgs.msg import *
+from .output import print_context_parameters
+from google.protobuf.struct_pb2 import ListValue, Struct
 
 def parameters_struct_to_msg(parameters):
     """Convert Dialogflow parameter (Google Struct) into ros msg
@@ -17,7 +18,28 @@ def parameters_struct_to_msg(parameters):
     if parameters.items():
         param_list = []
         for name, value in parameters.items():
-            param = DialogflowParameter(param_name=str(name), value=[str(value)])
+            name_utf8 = name
+            if type(value) is ListValue:
+                values_utf8 = []
+                for v in value:
+                    if (v != ""):
+                        values_utf8.append(v)
+                if (len(values_utf8) != 0):
+                    param = DialogflowParameter(param_name=name_utf8, value=values_utf8)
+                else:
+                    param = DialogflowParameter(param_name=name_utf8, value=[])
+            elif type(value) is Struct:
+                for v in value:
+                    if value[v] != "":
+                        value_utf8 = value[v]
+                        param = DialogflowParameter(param_name=name_utf8, value=[value_utf8])
+            else:
+                if type(value) is float:
+                    value_str = str(int(value))
+                    param = DialogflowParameter(param_name=name_utf8, value=[value_str])
+                else:
+                    value_utf8 = value
+                    param = DialogflowParameter(param_name=name_utf8, value=[value_utf8])
             param_list.append(param)
         return param_list
     else:
@@ -65,7 +87,8 @@ def contexts_struct_to_msg(contexts):
         df_context_msg = DialogflowContext()
         df_context_msg.name = str(context.name)
         df_context_msg.lifespan_count = int(context.lifespan_count)
-        df_context_msg.parameters = parameters_struct_to_msg(context.parameters)
+        # Temporal fix to field contexts[].parameters[].value[] must be of type str
+        #df_context_msg.parameters = parameters_struct_to_msg(context.parameters)
         context_list.append(df_context_msg)
     return context_list
 
@@ -113,9 +136,9 @@ def result_struct_to_msg(query_result):
         :rtype: DialogflowResult
         """
         df_result_msg = DialogflowResult()
-        df_result_msg.fulfillment_text = str(query_result.fulfillment_text)
-        df_result_msg.query_text = str(query_result.query_text)
-        df_result_msg.action = str(query_result.action)
+        df_result_msg.fulfillment_text = query_result.fulfillment_text
+        df_result_msg.query_text = query_result.query_text
+        df_result_msg.action = query_result.action
         df_result_msg.parameters = parameters_struct_to_msg(
                 query_result.parameters
         )

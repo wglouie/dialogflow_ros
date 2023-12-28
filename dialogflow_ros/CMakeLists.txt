@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roscpp
   std_msgs
-  message_generation
+  dialogflow_ros_msgs
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -17,24 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
-add_service_files(
-  FILES
-  DialogflowService.srv
-)
-
-add_message_files(
-  FILES
-  DialogflowResult.msg
-  DialogflowContext.msg
-  DialogflowParameter.msg
-  DialogflowRequest.msg
-  DialogflowEvent.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
@@ -48,7 +30,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ros_dialogflow
-#  CATKIN_DEPENDS rospy std_msgs
+#  CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -69,9 +51,9 @@ target_link_libraries(test_intent_event ${catkin_LIBRARIES} )
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-install(PROGRAMS
-  scripts/mic_client.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(DIRECTORY scripts/
+  USE_SOURCE_PERMISSIONS
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
 )
 
 # Mark other files for installation (e.g. launch and bag files, etc.)

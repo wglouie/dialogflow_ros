@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from google.cloud import speech
-from google.cloud.speech import enums
-from google.cloud.speech import types
 import pyaudio
-import Queue
+import queue
 import rospy
 from std_msgs.msg import String
 
@@ -21,7 +19,7 @@ class GspeechClient(object):
                                       rate=RATE, input=True,
                                       frames_per_buffer=self.CHUNK,
                                       stream_callback=self._get_data)
-        self._buff = Queue.Queue()  # Buffer to hold audio data
+        self._buff = queue.Queue()  # Buffer to hold audio data
         self.closed = False
 
         # ROS Text Publisher
@@ -102,15 +100,15 @@ class GspeechClient(object):
         """
         language_code = 'en-US'
         client = speech.SpeechClient()
-        config = types.RecognitionConfig(
-            encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=16000,
             language_code=language_code)
-        streaming_config = types.StreamingRecognitionConfig(
+        streaming_config = speech.StreamingRecognitionConfig(
             config=config,
             interim_results=True)
         # Hack from Google Speech Python docs, very pythonic c:
-        requests = (types.StreamingRecognizeRequest(audio_content=content) for content in self._generator())
+        requests = (speech.StreamingRecognizeRequest(audio_content=content) for content in self._generator())
         responses = client.streaming_recognize(streaming_config, requests)
         self._listen_print_loop(responses)
 

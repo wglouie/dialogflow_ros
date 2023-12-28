@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # from google.cloud import speech
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import enums
@@ -12,7 +10,6 @@ import rospkg
 import signal
 import yaml
 from std_msgs.msg import String
-
 
 class GspeechClient:
     def __init__(self):
