@@ -20,21 +20,19 @@ def print_context_parameters(contexts):
     result = "\n".join(result)
     return result
 
-
 def print_parameters(parameters):
     param_list = []
     temp_str = '\n\t'
     for parameter in parameters:
-        parameter = parameter.encode('utf-8')
+        parameter = parameter
         if type(parameters[parameter]) is ListValue or type(parameters[parameter]) is float:
             param_list.append("{}: {}\n\t".format(
                     parameter, parameters[parameter]))
         else:
             param_list.append("{}: {}\n\t".format(
-                    parameter, parameters[parameter].encode('utf-8')))
+                    parameter, parameters[parameter]))
         temp_str += "{}".format("\n\t".join(param_list))
         return temp_str
-
 
 def print_result(result):
     output = "DF_CLIENT: Results:\n" \
@@ -44,11 +42,12 @@ def print_result(result):
              "Fulfillment text: {}\n" \
              "Action: {}\n" \
              "Parameters: {}".format(
-                     result.query_text.encode('utf-8'),
-                     result.intent.display_name.encode('utf-8'),
+                     result.query_text,
+                     result.intent.display_name,
                      result.intent_detection_confidence,
                      print_context_parameters(result.output_contexts),
-                     result.fulfillment_text.encode('utf-8'),
-                     result.action.encode('utf-8'),
+                     result.fulfillment_text,
+                     result.action,
                      print_parameters(result.parameters))
+    print(output)
     return output

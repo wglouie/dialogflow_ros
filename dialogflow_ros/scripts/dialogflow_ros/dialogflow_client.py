@@ -273,6 +273,7 @@ class DialogflowClient(object):
                     response.query_result)
             self._results_pub.publish(df_msg)
             rospy.loginfo(output.print_result(response.query_result))
+            rospy.loginfo("test")
             # Play audio
             if self.PLAY_AUDIO:
                 self._play_stream(response.output_audio)
