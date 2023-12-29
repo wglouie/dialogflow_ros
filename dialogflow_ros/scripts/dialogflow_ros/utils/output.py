@@ -49,5 +49,5 @@ def print_result(result):
                      result.fulfillment_text,
                      result.action,
                      print_parameters(result.parameters))
-    print(output)
+    #print(output)
     return output

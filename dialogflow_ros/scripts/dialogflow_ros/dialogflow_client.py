@@ -38,7 +38,7 @@ class DialogflowClient(object):
         self.FORMAT = pyaudio.paInt16
         self.CHANNELS = 1
         self.RATE = 16000
-        self.USE_AUDIO_SERVER = rospy.get_param('/dialogflow_client/use_audio_server', False)
+        self.USE_AUDIO_SERVER = rospy.get_param('/dialogflow_client/use_audio_server', True)
         self.PLAY_AUDIO = rospy.get_param('/dialogflow_client/play_audio', True)
         self.DEBUG = rospy.get_param('/dialogflow_client/debug', False)
 
@@ -86,6 +86,7 @@ class DialogflowClient(object):
         rospy.logdebug("DF_CLIENT: Session Path: {}".format(self._session))
 
         self._responses = []
+        
         """ ROS Setup """
         results_topic = rospy.get_param('/dialogflow_client/results_topic',
                                         '/dialogflow_client/results')
@@ -116,6 +117,7 @@ class DialogflowClient(object):
 
         if self.PLAY_AUDIO:
             self._create_audio_output()
+            self._play_stream('hello world')
 
         rospy.logdebug("DF_CLIENT: Last Contexts: {}".format(self.last_contexts))
         rospy.loginfo("DF_CLIENT: Ready!")
@@ -190,16 +192,17 @@ class DialogflowClient(object):
                                           channels=1,
                                           rate=24000,
                                           output=True)
-
+	
     def _play_stream(self, data):
         """Simple function to play a the output Dialogflow response.
         :param data: Audio in bytes.
         """
+        #rospy.loginfo("Playing audio from stream")
         self.stream_out.start_stream()
         self.stream_out.write(data)
         time.sleep(0.2)  # Wait for stream to finish
         self.stream_out.stop_stream()
-
+	
     # -------------- #
     #  DF Utilities  #
     # -------------- #
@@ -218,9 +221,9 @@ class DialogflowClient(object):
         req = StreamingDetectIntentRequest(
                 session=self._session,
                 query_input=query_input,
-                #query_params=params,
-                single_utterance=True
-                #output_audio_config=self._output_audio_config
+                query_params=params,
+                single_utterance=True,
+                output_audio_config=self._output_audio_config
         )
         yield req
 
@@ -254,13 +257,17 @@ class DialogflowClient(object):
         self.last_contexts = converters.contexts_msg_to_struct(self.last_contexts)
         contexts = self.last_contexts + user_contexts
         params = QueryParameters(contexts=contexts)
+
+	#Fixed using: https://cloud.google.com/dialogflow/es/docs/how/detect-intent-tts
+        request = dialogflow_v2.DetectIntentRequest(
+	    session=self._session,
+	    query_input=query_input,
+	    query_params=params,
+	    output_audio_config=self._output_audio_config
+        )
+
         try:
-            response = self._session_cli.detect_intent(
-                    session=self._session,
-                    query_input=query_input
-                    #query_params=params,
-                    #output_audio_config=self._output_audio_config
-            )
+            response = self._session_cli.detect_intent(request=request)
         except google.api_core.exceptions.ServiceUnavailable:
             rospy.logwarn("DF_CLIENT: Deadline exceeded exception caught. The response "
                           "took too long or you aren't connected to the internet!")
@@ -273,7 +280,7 @@ class DialogflowClient(object):
                     response.query_result)
             self._results_pub.publish(df_msg)
             rospy.loginfo(output.print_result(response.query_result))
-            rospy.loginfo("test")
+            #rospy.loginfo("test")
             # Play audio
             if self.PLAY_AUDIO:
                 self._play_stream(response.output_audio)
@@ -292,7 +299,7 @@ class DialogflowClient(object):
                 resp_list.append(response)
                 rospy.logdebug(
                         'DF_CLIENT: Intermediate transcript: "{}".'.format(
-                                response.recognition_result.transcript.encode('utf-8')))
+                                response.recognition_result.transcript))
         except google.api_core.exceptions.Cancelled as c:
             rospy.logwarn("DF_CLIENT: Caught a Google API Client cancelled "
                           "exception. Check request format!:\n{}".format(c))
@@ -347,12 +354,16 @@ class DialogflowClient(object):
         params = converters.create_query_parameters(
                 contexts=self.last_contexts
         )
-        response = self._session_cli.detect_intent(
-                session=self._session,
-                query_input=query_input
-                #query_params=params,
-                #output_audio_config=self._output_audio_config
+        
+        request = dialogflow_v2.DetectIntentRequest(
+	    session=self._session,
+	    query_input=query_input,
+	    query_params=params,
+	    output_audio_config=self._output_audio_config
         )
+
+        response = self._session_cli.detect_intent(request=request)
+        
         df_msg = converters.result_struct_to_msg(response.query_result)
         if self.PLAY_AUDIO:
             self._play_stream(response.output_audio)
