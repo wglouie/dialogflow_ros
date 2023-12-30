@@ -46,7 +46,7 @@ include_directories(
 )
 
 add_executable(test_intent_event scripts/test/test_intent_event.cpp)
-add_dependencies(test_intent_event external_package_generate_messages_cpp  ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(test_intent_event external_package_generate_messages_cpp  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_intent_event ${catkin_LIBRARIES} )
 
 ## Mark executable scripts (Python etc.) for installation
