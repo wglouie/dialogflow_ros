@@ -3,6 +3,9 @@ from google.protobuf.struct_pb2 import ListValue
 
 def print_context_parameters(contexts):
     result = []
+    
+    print(contexts)
+    
     for context in contexts:
         param_list = []
         temp_str = '\n\t'
